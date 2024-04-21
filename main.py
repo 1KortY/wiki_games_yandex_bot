@@ -4,16 +4,13 @@ from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove
 import wikipedia
 import re
 
-
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.DEBUG
 )
 
 logger = logging.getLogger(__name__)
 
-
 wikipedia.set_lang("ru")
-
 
 reply_keyboard = [['/Guess_the_word', '/describe_the_word'],
                   ['/stop'],
@@ -61,11 +58,12 @@ async def start(update, context):
     user = update.effective_user
     await update.message.reply_html(
         "Привет " + user.mention_html() + "!\n"
-        "Описание бота.\n"
-        "Игра угадай слово: /Guess_the_word.\n"
-        "Игра опиши слово: /describe_the_word.",
+                                          "Описание бота.\n"
+                                          "Игра угадай слово: /Guess_the_word.\n"
+                                          "Игра опиши слово: /describe_the_word.",
         reply_markup=markup
     )
+
 
 #     await update.message.reply_text(
 #         "Я бот-справочник. Какая информация вам нужна?",
@@ -143,7 +141,7 @@ def main():
     #     # Точка входа в диалог.
     #     # В данном случае — команда /start. Она задаёт первый вопрос.
     #     entry_points=[CommandHandler('start', start)],
-#
+    #
     #     # Состояние внутри диалога.
     #     # Вариант с двумя обработчиками, фильтрующими текстовые сообщения.
     #     states={
@@ -152,11 +150,11 @@ def main():
     #         # Функция читает ответ на второй вопрос и завершает диалог.
     #         2: [MessageHandler(filters.TEXT & ~filters.COMMAND, second_response)]
     #     },
-#
+    #
     #     # Точка прерывания диалога. В данном случае — команда /stop.
     #     fallbacks=[CommandHandler('stop', stop)]
     # )
-#
+    #
     # application.add_handler(conv_handler)
 
     application.add_handler(CommandHandler("start", start))
