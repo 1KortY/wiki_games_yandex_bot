@@ -3,6 +3,7 @@ from telegram.ext import Application, MessageHandler, filters, CommandHandler, C
 from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove
 import wikipedia
 import re
+import random
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.DEBUG
@@ -120,9 +121,20 @@ async def help(update, context):
     )
 
 
+def Guess_world():
+    world = ['шар', 'утро', ' сон', 'море']
+    a = wiki_text(random.choice(world)).split()
+    a[0] = '???'
+    a = ' '.join(a)
+    a = a.split('.')
+    a = ''.join(a[0])
+    return a
+
+
 async def Guess_the_word(update, context):
-    await update.message.reply_text(
-        "Игра Угадай слово")
+    await update.message.reply_text(Guess_world())
+    await update.message.reply_text(Guess_world())
+
 
 
 async def describe_the_word(update, context):
