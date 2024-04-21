@@ -13,17 +13,18 @@ logger = logging.getLogger(__name__)
 
 wikipedia.set_lang("ru")
 
-reply_keyboard = [['/Guess_the_word', '/describe_the_word'],
+reply_keyboard = [['/guess_the_word', '/describe_the_word'],
                   ['/stop'],
                   ['/help']]
 markup = ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=False)
 
 
-# async def close_keyboard(update, context):
-#     await update.message.reply_text(
-#         "Ok",
-#         reply_markup=ReplyKeyboardRemove()
-#     )
+words = ['топор', 'утро', 'сон', 'море', 'пирог', 'часы', 'флаг',
+         'мяч', 'дерево', 'змея', 'дверь', 'стол', 'кот', 'собака',
+         'гвоздь', 'дождь', 'шапка', 'хлеб', 'фильм', 'письмо', 'фрукт',
+         'алмаз', 'яйцо', 'чайник', 'поезд', 'рыба', 'рюкзак', 'карандаш']
+n = ''
+
 
 def wiki_text(word):
     try:
@@ -59,87 +60,115 @@ async def start(update, context):
     user = update.effective_user
     await update.message.reply_html(
         "Привет " + user.mention_html() + "!\n"
-                                          "Описание бота.\n"
-                                          "Игра угадай слово: /Guess_the_word.\n"
-                                          "Игра опиши слово: /describe_the_word.",
+        "Я бот помогающий найти информацию о слове.\n"
+        "Просто напишите мне любое слово и я выведу информацию о нём.\n"
+        "\n"
+        "Так же я могу поиграть с вами в игры:\n"
+        "Игра угадай слово: /guess_the_word.\n"
+        "Игра опиши слово: /describe_the_word.",
         reply_markup=markup
     )
 
 
-#     await update.message.reply_text(
-#         "Я бот-справочник. Какая информация вам нужна?",
-#         reply_markup=markup
-#     )
-
-
-# async def start(update, context):
-#     await update.message.reply_text(
-#         "Привет. Пройдите небольшой опрос, пожалуйста!\n"
-#         "Вы можете прервать опрос, послав команду /stop.\n"
-#         "В каком городе вы живёте?", reply_markup=markup)
-#
-#     # Число-ключ в словаре states —
-#     # втором параметре ConversationHandler'а.
-#     return 1
-#     # Оно указывает, что дальше на сообщения от этого пользователя
-#     # должен отвечать обработчик states[1].
-#     # До этого момента обработчиков текстовых сообщений
-#     # для этого пользователя не существовало,
-#     # поэтому текстовые сообщения игнорировались.
-
-
-# # Добавили словарь user_data в параметры.
-# async def first_response(update, context):
-#     # Сохраняем ответ в словаре.
-#     context.user_data['locality'] = update.message.text
-#     await update.message.reply_text(
-#         f"Какая погода в городе {context.user_data['locality']}?")
-#     return 2
-
-
-# # Добавили словарь user_data в параметры.
-# async def second_response(update, context):
-#     weather = update.message.text
-#     logger.info(weather)
-#     # Используем user_data в ответе.
-#     await update.message.reply_text(
-#         f"Спасибо за участие в опросе! Привет, {context.user_data['locality']}!")
-#     context.user_data.clear()  # очищаем словарь с пользовательскими данными
-#     return ConversationHandler.END
-
-
 async def stop(update, context):
-    await update.message.reply_text("Всего доброго!")
+    await update.message.reply_text(
+        "Просто напишите мне любое слово и я выведу информацию о нём.\n"
+        "\n"
+        "Так же я могу поиграть с вами в игры:\n"
+        "Игра угадай слово: /guess_the_word.\n"
+        "Игра опиши слово: /describe_the_word."
+    )
+    return ConversationHandler.END
 
 
 async def help(update, context):
     await update.message.reply_text(
         "Все команды:\n"
         "Начать заново: /start or /stop.\n"
-        "Игра Угадай слово: /Guess_the_word.\n"
+        "Игра Угадай слово: /guess_the_word.\n"
         "Игра Опиши слово: /describe_the_word."
     )
 
 
-def Guess_world():
-    world = ['шар', 'утро', ' сон', 'море']
-    a = wiki_text(random.choice(world)).split()
-    a[0] = '???'
+def short_answer(t):
+    global words
+    global n
+
+    if t == 1:
+        n = random.choice(words)
+        a = wiki_text(n).split()
+        a[0] = '???'
+    else:
+        a = wiki_text(t).split()
     a = ' '.join(a)
     a = a.split('.')
-    a = ''.join(a[0])
+    a = ''.join(a[0]) + '.'
     return a
 
 
-async def Guess_the_word(update, context):
-    await update.message.reply_text(Guess_world())
-    await update.message.reply_text(Guess_world())
+async def guess_the_word(update, context):
+    await update.message.reply_text(
+        'Игра угадай слово.\n'
+        '\n'
+        'Я скажу вам определение слова которое загадал,\n'
+        'А вам предстоит угадать это слово.\n'
+        'Все просто :)\n'
+        '\n'
+        'Команда для выхода из игры: /stop.'
+    )
+    await update.message.reply_text(short_answer(1))
+    await update.message.reply_text('Какое слово я загадал?')
+    return 1
 
+
+async def guess_response(update, context):
+    global n
+    answer = update.message.text
+    if n in answer or n.capitalize() in answer:
+        await update.message.reply_text('Отлично, вы угадали слово!')
+        return ConversationHandler.END
+    else:
+        await update.message.reply_text('Вы не угадали :(\n'
+                                        'Подумайте лучше и напишите ответ снова.\n'
+                                        'или попробуйте другие функции: /stop.')
 
 
 async def describe_the_word(update, context):
+    global words
+    global n
+    n = random.choice(words)
     await update.message.reply_text(
-        "Игра Опиши слово")
+        "Игра опиши слово.\n"
+        "\n"
+        "Я называю слово, которое мы с вами должны описать.\n"
+        "Я сверю наши ответы и скажу похожи они или нет."
+    )
+    await update.message.reply_text(f'Давайте опишем слово: {n.capitalize()}.')
+    return 2
+
+
+async def describe_response(update, content):
+    global n
+    sa = short_answer(n)
+    count = 0
+    answer = update.message.text.split()
+    for i in answer:
+        if i in sa:
+            count += 1
+    if count * 100 / len(answer) >= 15:
+        await update.message.reply_text('Отлично, наши ответы похожи!\n'
+                                        '\n'
+                                        'Вот мой ответ:\n'
+                                        f'{sa}')
+        return ConversationHandler.END
+    else:
+        await update.message.reply_text('Наши ответы разные :(\n'
+                                        'Вот мой ответ:\n'
+                                        '' + sa + '\n'
+                                        '\n'
+                                        'Подумайте лучше и напишите ответ снова.\n'
+                                        '\n'
+                                        'или попробуйте другие функции: /stop.\n')
 
 
 async def wiki(update, context):
@@ -149,34 +178,33 @@ async def wiki(update, context):
 def main():
     application = Application.builder().token('6849720257:AAEF065UJMXeZfny0Dljn6wzSyNOf-ttOyU').build()
 
-    # conv_handler = ConversationHandler(
-    #     # Точка входа в диалог.
-    #     # В данном случае — команда /start. Она задаёт первый вопрос.
-    #     entry_points=[CommandHandler('start', start)],
-    #
-    #     # Состояние внутри диалога.
-    #     # Вариант с двумя обработчиками, фильтрующими текстовые сообщения.
-    #     states={
-    #         # Функция читает ответ на первый вопрос и задаёт второй.
-    #         1: [MessageHandler(filters.TEXT & ~filters.COMMAND, first_response)],
-    #         # Функция читает ответ на второй вопрос и завершает диалог.
-    #         2: [MessageHandler(filters.TEXT & ~filters.COMMAND, second_response)]
-    #     },
-    #
-    #     # Точка прерывания диалога. В данном случае — команда /stop.
-    #     fallbacks=[CommandHandler('stop', stop)]
-    # )
-    #
-    # application.add_handler(conv_handler)
+    guess = ConversationHandler(
+        entry_points=[CommandHandler('guess_the_word', guess_the_word)],
+
+        states={
+            1: [MessageHandler(filters.TEXT & ~filters.COMMAND, guess_response)]
+        },
+        fallbacks=[CommandHandler('stop', stop)]
+    )
+
+    describe = ConversationHandler(
+        entry_points=[CommandHandler('describe_the_word', describe_the_word)],
+
+        states={
+            2: [MessageHandler(filters.TEXT & ~filters.COMMAND, describe_response)]
+        },
+        fallbacks=[CommandHandler('stop', stop)]
+    )
+
+    application.add_handler(guess)
+    application.add_handler(describe)
 
     application.add_handler(CommandHandler("start", start))
 
-    application.add_handler(CommandHandler("Guess_the_word", Guess_the_word))
+    application.add_handler(CommandHandler("guess_the_word", guess_the_word))
     application.add_handler(CommandHandler("describe_the_word", describe_the_word))
     application.add_handler(CommandHandler("stop", stop))
     application.add_handler(CommandHandler("help", help))
-
-    # application.add_handler(CommandHandler("close", close_keyboard))
 
     text_handler = MessageHandler(filters.TEXT & ~filters.COMMAND, wiki)
 
